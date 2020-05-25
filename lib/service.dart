@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class _HttpService {
   static const _API_URL = "http://13.232.62.73:8080/api";
 
-  Future<String> postImageAndExtractCode(String filePath) async {
+  Future<Map<String, dynamic>> postImageAndExtractCode(String filePath) async {
     var url = Uri.parse(_API_URL + "/upload");
     var req = http.MultipartRequest("POST", url);
     var file = await http.MultipartFile.fromPath('image', filePath);
@@ -16,10 +16,10 @@ class _HttpService {
       var res = await req.send();
       var jsonString = await res.stream.bytesToString();
       Map<String, dynamic> body = jsonDecode(jsonString);
-      return body['res'];
+      return body;
     } catch (err) {
       print(err);
-      return "";
+      return null;
     }
   }
 

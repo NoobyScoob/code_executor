@@ -16,8 +16,49 @@ class _CodeEdit extends State<CodeEdit> {
 
   TextEditingController textEditingController = TextEditingController();
 
+  bool hasErrors(res) =>
+    res["message"] == "successful" && !(res["res"]["stderr"] == "");
+    
+  
   @override
   Widget build(BuildContext context) {
+    var showBottomSheet = (Map<String, dynamic> res) {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext buildContext) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: <Widget>[
+                    // Heading
+                    
+                    hasErrors(res)
+                    ? Text('Errors', style: TextStyle(fontSize: 24, color: Colors.redAccent))
+                    : Text('Output', style: TextStyle(fontSize: 24)),
+                    
+                    Divider(),
+                    SizedBox(height: 6),
+
+                    hasErrors(res)
+                    ? Text(res["res"]["stderr"], style: TextStyle(fontSize: 18))
+                    : Text(res["res"]["stdout"], style: TextStyle(fontSize: 18))
+                    // Body
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      );
+    };
+
     textEditingController.text = widget.code;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -58,7 +99,8 @@ class _CodeEdit extends State<CodeEdit> {
                     ],
                   ),
                   onPressed: (){
-                    httpService.compileAndExecute(textEditingController.text, '');
+                    httpService.compileAndExecute(textEditingController.text, '')
+                    .then((res) => showBottomSheet(res));
                   },
                 ),
               )

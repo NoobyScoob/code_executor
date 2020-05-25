@@ -39,6 +39,39 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+
+    var showBottomSheet = (String message)  {
+      showModalBottomSheet(
+        context: context,
+        builder: (buildContext) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: <Widget>[
+                    Text('Errors', style: TextStyle(fontSize: 24)),
+                    Divider(),
+                    SizedBox(height: 6),
+                    Text(
+                      message == '' ? "Image doesn't contain any code" : message,
+                      style: TextStyle(fontSize: 18)
+                    ),
+                    SizedBox(height: 6)
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      );
+    };
+
     Widget _cameraPreviewWidget =
         (cameraController == null || !cameraController.value.isInitialized)
             ? const Text(
@@ -122,15 +155,21 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         onPressed: () async {
                           httpService
                               .postImageAndExtractCode(imagePath)
-                              .then((value) {
-                                var lines = value.split("\n").length + 1;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => CodeEdit(
-                                    maxLines: lines,
-                                    code: value,
-                                  ))
-                                );
+                              .then((body) {
+                                if ((body['message'] != 'successful'
+                                || body['message'] == 'successful' && body['res'] == ''))
+                                  showBottomSheet(body['res']);
+                                else {
+                                  String value = body['res'];
+                                  var lines = value.split("\n").length + 1;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => CodeEdit(
+                                      maxLines: lines,
+                                      code: value,
+                                    ))
+                                  );
+                                }
                               });
                         },
                         child: Text('Upload', style: TextStyle(color: Colors.white)),
